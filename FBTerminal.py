@@ -2,6 +2,8 @@ from os import system, chdir
 from facepy import GraphAPI 
 from subprocess import Popen, PIPE
 from random import randint
+#haha, this key has probably expired by now,
+#please get your own and add the app TerminalAnywhere on FaceBook. Contact durg2@illinois.edu for details
 graph = GraphAPI('CAAYGdFK3zvYBAHCZBpzVbXrztWklY8a63W8qEDZB2eIndk7ZAsh4AtL2EbVtZCIgduuKum1adO91qKanraX9wjX7fbscOAohZCpBlu7lsjdwZAff5HtfWWcUbpl6BxhPGQGOfhmRoU6FNNbycq61KduS9xFzKO6uLYYAsMRloOocSeC7KTGKMV5PvGYvoEzibwMUu0qfp45AZDZD')
 a = graph.get('me/feed')
 last = a['data'][0]['message']
@@ -56,7 +58,9 @@ while True:
             postedID = posted['id']
         elif cmd[1:3]=='ul' and len(cmd)>3 and cmd!=last:
             last = cmd
+            #replace the following file path with the path to your google drive folder
             system("copy "+cmd[4:]+" \"C:\Users\Aneesh Durg\Google Drive\"")
+        #Windows only, sorry. Please check that Jrepl.bat is added to your PATH
         elif cmd[1:]=='start-jrepl':
             if postedID is not None:
                 graph.delete(postedID)
