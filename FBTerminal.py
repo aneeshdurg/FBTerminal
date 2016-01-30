@@ -54,6 +54,9 @@ while True:
                 postedID = None
             posted = graph.post('me/feed', message="FBTerminal is locked!")
             postedID = posted['id']
+        elif cmd[1:3]=='ul' and len(cmd)>3 and cmd!=last:
+            last = cmd
+            system("copy "+cmd[4:]+" \"C:\Users\Aneesh Durg\Google Drive\"")
         elif cmd[1:]=='start-jrepl':
             if postedID is not None:
                 graph.delete(postedID)
