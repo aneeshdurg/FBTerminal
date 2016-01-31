@@ -3,6 +3,8 @@ from facepy import GraphAPI
 from subprocess import Popen, PIPE
 from random import randint
 from time import time
+import sys
+import StringIO
 #Edit this string with the path to your Google Drive folder
 gdrive = "\"C:\Users\Aneesh Durg\Google Drive\""
 #To get your own key add the app TerminalAnywhere on FaceBook. Contact durg2@illinois.edu for details
@@ -80,6 +82,42 @@ while True:
             last = cmd
             #replace the following file path with the path to your google drive folder
             system("copy "+cmd[4:]+" "+gdrive)
+        elif cmd[1:]=='start-py':
+            if postedID is not None:
+                graph.delete(postedID)
+                postedID = None
+            print "Starting python"
+            last = cmd
+            while True:
+                if postedID is not None:
+                    graph.delete(postedID)
+                    postedID = None
+                toPost = 'type :stop-py to exit\n'
+                codeOut = StringIO.StringIO()
+                codeErr = StringIO.StringIO()
+                code = graph.get('me/feed')['data'][0]['message'] 
+                if code==':stop-py':
+                    break
+                # capture output and errors
+                sys.stdout = codeOut
+                sys.stderr = codeErr    
+                if 'import' not in code and 'exit()' not in code and code!=last:
+                    exec code[1:]
+                    # restore stdout and stderr
+                    sys.stdout = sys.__stdout__
+                    sys.stderr = sys.__stderr__
+                
+                    s = codeOut.getvalue()
+                    if len(s)>0:
+                        toPost+="output :"+s+"\n"
+
+                    s = codeErr.getvalue()
+                    if len(s)>0:
+                        toPost+="errors: "+s
+                    posted = graph.post('me/feed', message=toPost)
+                    postedID = posted['id']
+                last = code   
+ 
         #Windows only, sorry. Please check that Jrepl.bat is added to your PATH
         elif cmd[1:]=='start-jrepl':
             if postedID is not None:
