@@ -2,32 +2,43 @@ from os import system, chdir
 from facepy import GraphAPI 
 from subprocess import Popen, PIPE
 from random import randint
-#haha, this key has probably expired by now,
-#please get your own and add the app TerminalAnywhere on FaceBook. Contact durg2@illinois.edu for details
-graph = GraphAPI('CAAYGdFK3zvYBAHCZBpzVbXrztWklY8a63W8qEDZB2eIndk7ZAsh4AtL2EbVtZCIgduuKum1adO91qKanraX9wjX7fbscOAohZCpBlu7lsjdwZAff5HtfWWcUbpl6BxhPGQGOfhmRoU6FNNbycq61KduS9xFzKO6uLYYAsMRloOocSeC7KTGKMV5PvGYvoEzibwMUu0qfp45AZDZD')
+from time import time
+#Edit this string with the path to your Google Drive folder
+gdrive = "\"C:\Users\Aneesh Durg\Google Drive\""
+#To get your own key add the app TerminalAnywhere on FaceBook. Contact durg2@illinois.edu for details
+APIkeyReader = open('apikey.txt', 'r')
+APIkey = APIkeyReader.read()
+APIkeyReader.close()
+graph = GraphAPI(APIkey)
 a = graph.get('me/feed')
 last = a['data'][0]['message']
 fileCreated = False
 postedID = None
 locked = True
 key = "#"
+start = time()
+uptime = start
 for i in xrange(5):
     key+=str(randint(0, 9))
 print "Please post the following to unlock FBTerminal: "+key
 while True:
     if locked:
-        a = graph.get('me/feed')
-        cmd = a['data'][0]['message']
-        if cmd == key:
-            print 'unlocked'
-            if postedID is not None:
-                graph.delete(postedID)
-            locked = False
-            posted = graph.post('me/feed', message='FBTerminal was successfully unlocked!')
-            postedID = posted['id']
-            continue
-        elif cmd==':printKey':
-            print key
+        now = time()-start
+        if now%10==0:
+            a = graph.get('me/feed')
+            cmd = a['data'][0]['message']
+            if cmd == key:
+                print 'unlocked'
+                if postedID is not None:
+                  graph.delete(postedID)
+                locked = False
+                posted = graph.post('me/feed', message='FBTerminal was successfully unlocked!')
+                postedID = posted['id']
+                continue
+            elif cmd==':printKey':
+             print key
+            else:
+                continue
         else:
             continue
 
@@ -45,6 +56,7 @@ while True:
                 graph.delete(postedID)
             exit()
         elif cmd[1:]=='lockFBTerm':
+            start = time()
             print 'locked'
             key = "#"
             for i in xrange(5):
@@ -56,10 +68,18 @@ while True:
                 postedID = None
             posted = graph.post('me/feed', message="FBTerminal is locked!")
             postedID = posted['id']
+            system("echo "+key+" > passkey.txt")
+            system("copy passkey.txt "+gdrive)
+            system("del passkey.txt")
+        elif cmd[1:] == 'uptime':
+            if postedID is not None:
+                graph.delete(postedID)
+            posted = graph.post('me/feed', message=str(time()-uptime))
+            postedID = posted['id']
         elif cmd[1:3]=='ul' and len(cmd)>3 and cmd!=last:
             last = cmd
             #replace the following file path with the path to your google drive folder
-            system("copy "+cmd[4:]+" \"C:\Users\Aneesh Durg\Google Drive\"")
+            system("copy "+cmd[4:]+" "+gdrive)
         #Windows only, sorry. Please check that Jrepl.bat is added to your PATH
         elif cmd[1:]=='start-jrepl':
             if postedID is not None:
